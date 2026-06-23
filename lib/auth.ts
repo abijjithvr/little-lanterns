@@ -3,24 +3,28 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET is required");
-}
-
 const jwtOptions = { expiresIn: "30d" } as const;
 const cookieOptions = ["HttpOnly", "Path=/", "Max-Age=2592000", "SameSite=Lax", process.env.NODE_ENV === "production" ? "Secure" : undefined]
   .filter(Boolean)
   .join("; ");
 
+function getJwtSecret(): string | null {
+  return process.env.JWT_SECRET ?? null;
+}
+
 export function generateToken(userId: string) {
-  return jwt.sign({ userId }, JWT_SECRET as string, jwtOptions);
+  const secret = getJwtSecret();
+  if (!secret) {
+    throw new Error("JWT_SECRET is not set. Set the JWT_SECRET environment variable.");
+  }
+  return jwt.sign({ userId }, secret, jwtOptions);
 }
 
 export function verifyToken(token: string) {
+  const secret = getJwtSecret();
+  if (!secret) return null;
   try {
-    return jwt.verify(token, JWT_SECRET as string) as unknown as { userId: string };
+    return jwt.verify(token, secret) as unknown as { userId: string };
   } catch {
     return null;
   }
