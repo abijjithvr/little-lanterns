@@ -70,7 +70,7 @@ function getInitialState(): EcommerceState {
 
 export function EcommerceProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<EcommerceState>(getInitialState);
-  const timers = useRef<Record<string, ReturnType<typeof window.setTimeout>>>({});
+  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     try {
@@ -111,7 +111,7 @@ export function EcommerceProvider({ children }: { children: ReactNode }) {
     const activeTimers = timers.current;
 
     return () => {
-      Object.values(activeTimers).forEach((timer) => window.clearTimeout(timer));
+      Object.values(activeTimers).forEach((timer) => clearTimeout(timer));
     };
   }, []);
 
@@ -122,7 +122,7 @@ export function EcommerceProvider({ children }: { children: ReactNode }) {
       toasts: [...current.toasts, { id, message }].slice(-3),
     }));
 
-    timers.current[id] = window.setTimeout(() => {
+    timers.current[id] = setTimeout(() => {
       setState((current) => ({
         ...current,
         toasts: current.toasts.filter((toast) => toast.id !== id),
