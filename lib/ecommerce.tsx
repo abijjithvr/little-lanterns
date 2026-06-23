@@ -93,6 +93,29 @@ export function EcommerceProvider({ children }: { children: ReactNode }) {
     setState((current) => ({ ...current, hydrated: true }));
   }, []);
 
+  // If user is logged in, fetch wishlist from server and replace local wishlist
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (data?.user) {
+          const w = await fetch("/api/wishlist");
+          const wdata = await w.json();
+          if (mounted && Array.isArray(wdata?.wishlist)) {
+            setState((current) => ({ ...current, wishlist: wdata.wishlist }));
+          }
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (!state.hydrated) {
       return;
@@ -173,16 +196,38 @@ export function EcommerceProvider({ children }: { children: ReactNode }) {
   const toggleWishlist = useCallback((product: Product) => {
     const alreadyWishlisted = state.wishlist.includes(product.id);
 
-    setState((current) => {
-      return {
-        ...current,
-        wishlist: alreadyWishlisted
-          ? current.wishlist.filter((item) => item !== product.id)
-          : [...current.wishlist, product.id],
-      };
-    });
+    (async () => {
+      try {
+        // Try server toggle; falls back to local-only if unauthorized
+        const res = await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: product.id }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.wishlist)) {
+            setState((current) => ({ ...current, wishlist: data.wishlist }));
+            addToast(alreadyWishlisted ? "Removed from wishlist" : "Added to wishlist ♡");
+            return;
+          }
+        }
+} catch {
+        // ignore and fallback to local
+      }
 
-    addToast(alreadyWishlisted ? "Removed from wishlist" : "Added to wishlist ♡");
+      // fallback local behaviour
+      setState((current) => {
+        return {
+          ...current,
+          wishlist: alreadyWishlisted
+            ? current.wishlist.filter((item) => item !== product.id)
+            : [...current.wishlist, product.id],
+        };
+      });
+
+      addToast(alreadyWishlisted ? "Removed from wishlist" : "Added to wishlist ♡");
+    })();
   }, [addToast, state.wishlist]);
 
   const moveWishlistToCart = useCallback((product: Product) => {

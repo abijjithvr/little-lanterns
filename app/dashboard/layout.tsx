@@ -17,13 +17,23 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("ll_user") === "logged-in";
-    if (!isLoggedIn) {
-      router.replace("/login");
-      return;
-    }
-
-    setReady(true);
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (!data?.user) {
+          router.replace("/login");
+          return;
+        }
+        if (mounted) setReady(true);
+      } catch {
+        router.replace("/login");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, [router]);
 
   if (!ready) {
@@ -41,9 +51,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           ))}
         </div>
         <Button
-          onClick={() => {
-            localStorage.removeItem("ll_user");
-            localStorage.removeItem("ll_role");
+          onClick={async () => {
+            await fetch("/api/auth/logout", { method: "POST" });
             router.push("/");
           }}
           className="px-4 py-2 text-sm"
