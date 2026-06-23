@@ -1,26 +1,130 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fff9f5;
+  --foreground: #6b4f3b;
+
+  --cream: #fff9f5;
+  --pink: #fceeef;
+  --lavender: #f5f0ff;
+  --peach: #ffdcc8;
+  --gold: #f6d37a;
+  --brown: #6b4f3b;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Nunito", Arial, sans-serif;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.floating-star,
+.floating-lantern,
+.floating-cloud {
+  position: absolute;
+  display: block;
+}
+
+.floating-star {
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 30% 30%, #fffef5, var(--gold));
+  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
+  animation: floaty 4.8s ease-in-out infinite;
+  opacity: 0.9;
+}
+
+.floating-lantern {
+  width: 26px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffecc3, var(--gold));
+  box-shadow: 0 8px 18px rgba(246, 211, 122, 0.45);
+  animation: sway 5s ease-in-out infinite;
+}
+
+.floating-lantern::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -7px;
+  width: 2px;
+  height: 8px;
+  transform: translateX(-50%);
+  background: rgba(107, 79, 59, 0.35);
+}
+
+.floating-cloud {
+  width: 70px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  filter: blur(0.2px);
+  animation: drift 8s ease-in-out infinite;
+}
+
+.floating-cloud::before,
+.floating-cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.floating-cloud::before {
+  width: 28px;
+  height: 28px;
+  left: 8px;
+  top: -12px;
+}
+
+.floating-cloud::after {
+  width: 24px;
+  height: 24px;
+  right: 12px;
+  top: -9px;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-2deg) translateY(0px);
+  }
+  50% {
+    transform: rotate(2deg) translateY(-6px);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translateX(0px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
 }
